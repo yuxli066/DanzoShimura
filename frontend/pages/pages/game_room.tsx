@@ -5,7 +5,7 @@ import user_context from '../context/userContext';
 import room_context from '../context/roomContext';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
-import Link from 'next/link'
+import Link from 'next/link';
 
 const Div = styled('Div')(({ theme }) => ({
   ...theme.typography.button,
@@ -25,11 +25,10 @@ interface bunny_button_type {
 export default function GameRoom(props: any) {
   // shared contexts
   const [ user_state, user_dispatch ] = useContext(user_context.UserContext);
-  const [ room_context_state, room_context_dispatch ] = useContext(room_context.RoomContext);
   const socket = useContext(socket_context.SocketContext);
   
   // game states
-  const [ game_state, set_game_state ] = useState<any>(null);
+  const [ current_game_state, set_current_game_state ] = useState<any>(null);
   const [ bunny_buttons, set_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
     for (let i = 0; i < 12; ++i) {
@@ -40,48 +39,11 @@ export default function GameRoom(props: any) {
     };
   });
   const [ selected_bunnies, set_selected_bunnies ] = useState<any[]>([]);
-  const [ current_player, set_current_player ] = useState<string>('');
 
   const updateGameState = (game_state: any) => {
-    console.log("Room State:", game_state);
-    set_game_state(game_state);
-    
-    if (game_state.num_players === 1) {
-      console.log("THIS IS PLAYER 1");
-      user_dispatch({
-        type: 'SET USERNAME TAG',
-        payload: 'player1',
-      });
-
-      set_game_state(() => {
-        return {
-          ...game_state,
-          client_player: 'player1',
-        }
-      });
-
-      set_current_player('player1');
-    } 
-
-    if (game_state.num_players === 2) {
-      console.log("THIS IS PLAYER 2");
-      user_dispatch({
-        type: 'SET USERNAME TAG',
-        payload: 'player2',
-      });
-
-      set_game_state(() => {
-        return {
-          ...game_state,
-          client_player: 'player2',
-        }
-      });
-
-      set_current_player('player2');
-    }
-    
-    socket?.sck?.emit('get_player_socket_id', game_state.name);
-  }
+    console.log("Game State:", game_state);
+    set_current_game_state(game_state);
+  };
   const handleSelection = (e: any) => {
     console.log("selecting bunnies");
     const selected_bunny = e.target.id;
@@ -92,7 +54,7 @@ export default function GameRoom(props: any) {
       }
     });
     set_selected_bunnies(() => (selected_bunnies.concat(selected_bunny)));
-  }
+  };
   const resetSelection = () => {
     set_bunny_buttons(() => {
       const bunny_btns = {} as bunny_button_type;
@@ -110,7 +72,7 @@ export default function GameRoom(props: any) {
     });
 
     set_selected_bunnies(() => []);
-  }
+  };
   const playerIsReady = (e: any) => {
     console.log("player is ready!");
     socket?.sck?.emit('player_ready', {
@@ -124,79 +86,24 @@ export default function GameRoom(props: any) {
       payload: selected_bunnies,
     });
 
-  }
-  const handleServerSocketID = (socket_id: string) => {
-    if (game_state.num_players === 1) {
-      console.log("SOCKET ID PLAYER 1:", socket_id);
-      user_dispatch({
-        type: 'SET USERNAME TAG',
-        payload: 'player1',
-      });
-
-      set_game_state(() => {
-        return {
-          ...game_state,
-          client_player: 'player1',
-        }
-      });
-
-      set_current_player('player1');
-    } 
-
-    if (game_state.num_players === 2) {
-      console.log("SOCKET ID PLAYER 2:", socket_id);
-      user_dispatch({
-        type: 'SET USERNAME TAG',
-        payload: 'player1',
-      });
-
-      set_game_state(() => {
-        return {
-          ...game_state,
-          client_player: 'player1',
-        }
-      });
-
-      set_current_player('player1');
-    } 
-    socket?.sck?.on('return_player_socket_id', (socket_id) => {
-
-    })
-    console.log("Socket ID from Server:", socket_id);
-  }
-
+  };
   useEffect(() => {
     socket?.sck?.emit('get_game_state', {
       room_name: user_state.room,
       player_name: user_state.username
     });
   }, [socket]);
-
   useEffect(() => {
     socket?.sck?.on('game_state', updateGameState);
-
     return () => {
       socket?.sck?.off('game_state');
     }
   }, [socket]);
-  
-  // useEffect(() => {
-  //   if (socket) {
-  //     console.log("Socket connected");
-  //   }
-  //   const socket_id_type = room_context_state[].player_1_socket_id === null ?  
-  //   room_context_dispatch({
-  //     type: 'UPDATE NUM PLAYERS', 
-  //     payload: {
-  //       num_players: room_state[].players + 1,
-  //     }
-  //   })
-  // }, [socket]);
 
-  return ( game_state?.status === 'Ready' ) ? (
+  return (current_game_state?.status === 'Ready') ? (
     <>
       <Div>
-        {" Welcome " + user_state.username + " to " + user_state.room}
+        { `Welcome ${user_state.username} to ${user_state.room}` }
       </Div>
       <Box 
         component={"div"}
@@ -223,7 +130,7 @@ export default function GameRoom(props: any) {
             'flexWrap': 'wrap'
           }}  
         >{
-          game_state.available_bunnies.map((bunny: any, index: number) => (
+          current_game_state.available_bunnies.map((bunny: any, index: number) => (
             <Button 
               variant={bunny_buttons[`${bunny.name}`] ? 'contained' : 'outlined' } 
               size="large"

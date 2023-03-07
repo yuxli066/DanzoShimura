@@ -79,6 +79,7 @@ class GameStates {
         };
 
         this.GAME_STATES = new Map();
+        this.GAME_PLAYERS = new Map(); // track all players with corresponding socket ids
     }
   
     static getInstance() {
@@ -93,6 +94,7 @@ class GameStates {
         this.GAME_STATES.set('Room1', new Map(Object.entries(this.INIT_STATE.Room1)));
         this.GAME_STATES.set('Room2', new Map(Object.entries(this.INIT_STATE.Room2)));
         this.GAME_STATES.set('Room3', new Map(Object.entries(this.INIT_STATE.Room3)));
+        this.GAME_PLAYERS.set('Players', []);
     }
 
     print(text) {
@@ -101,7 +103,7 @@ class GameStates {
         for (const [key, value] of this.GAME_STATES) {
           serialized_map.push({id: key, playerInfo: value});
         }
-        console.log('GAME STATE: ', serialized_map);
+        console.log('GAME STATE:', serialized_map);
     }
 
     serialize() {

@@ -29,7 +29,7 @@ app.use(logger((tokens, req, res) => {
  * Normalize a port into a number, string, or false.
  */
  function normalizePort(val) {
-  var port = parseInt(val, 10);
+  const port = parseInt(val, 10);
 
   if (isNaN(port)) {
     // named pipe
@@ -66,17 +66,17 @@ const { GameStates } = require('./game/game_states');
 const game = GameStates.getInstance();
 game.init_states() /** Set up global room states */
 const GAME_STATES = game.GAME_STATES;
+const GAME_PLAYERS = game.GAME_PLAYERS;
 
 io.on('connect', (socket) => {
   console.log(`new websocket client with id ${socket.id} connected!`);
-  
   socket.on('disconnect', () => console.log(`client ${socket.id} disconnected!`));
 
   // adapted from: https://stackoverflow.com/a/40413809
   // using rooms as opposed to namespaces for now so that we minimize the back-and forth between socket and client
   // (namespaces would mean the server creating the namespace and then the client connecting to the namespace, so an extra trip)
   socket.on('join', (player_info) => {
-    const { room_name, player_name } = JSON.parse(player_info);
+    const { room_name, player_name, player_tag } = JSON.parse(player_info);
     console.log(`Client with client id: ${socket.id}, joining room: ${room_name}`);
     
     if (room_name) {
@@ -85,31 +85,28 @@ io.on('connect', (socket) => {
       // TODO: Allow users to create rooms if we have time
     }
 
-    const ROOM_MAP = GAME_STATES.get(room_name), ROOM_PLAYERS = ROOM_MAP.get('players');
+    const ROOM_MAP = GAME_STATES.get(room_name), 
+          ROOM_PLAYERS = ROOM_MAP.get('players');
     
     let NUM_PLAYERS = ROOM_MAP.get('num_players');
+    
     ROOM_PLAYERS.push({
+      socket_id: socket.id,
       player_name: player_name, 
-      socket_id: socket.id
+      player_tag: player_tag,
+      player_number: `player${NUM_PLAYERS + 1}`
     });
     ROOM_MAP.set('num_players', NUM_PLAYERS + 1);
 
-    console.log('Players:', ROOM_PLAYERS);
-    
     if (ROOM_PLAYERS.length === 2) {
-      console.log('ROOM STATUS READY');
-
       ROOM_MAP.set('status', 'Ready');
       io.emit(`FULL`, room_name);
       io.emit(`game_state`, Object.fromEntries(ROOM_MAP));
     } else if (ROOM_PLAYERS.length === 1) {
-      console.log('ROOM STATUS WAITING');
-
       ROOM_MAP.set('status', 'Waiting');
       io.emit(`game_state`, Object.fromEntries(ROOM_MAP));
       io.emit(`WAITING`, room_name);
     }
-
     game.print('Joining Rooms:');
   });
 
@@ -120,7 +117,6 @@ io.on('connect', (socket) => {
         room_attributes.set('status', 'Ready');
         io.emit(`FULL`, room_name);
       } else if (num_players.length === 1) {
-        // console.log(room_name, 'ROOM IS WAITING FOR SECOND PLAYER');
         io.emit(`WAITING`, room_name);
       } else {
         // console.log(room_name, 'ROOM IS EMPTY');
@@ -129,13 +125,10 @@ io.on('connect', (socket) => {
 
     console.log(game.serialize())
     io.emit('room_status', game.serialize());
-    game.print('Checking rooms:');
-  
   });
 
-  socket.on('get_game_state', ({room_name, player_name}) => {
-    console.log('Getting game state for room:', room_name, 'player_name:', player_name);
-    const ROOM_MAP = GAME_STATES.get(room_name);
+  socket.on('get_game_state', ({room_name}) => {
+    const ROOM_MAP = GAME_STATES.get(room_name) ? GAME_STATES.get(room_name) : new Map();
     io.emit(`game_state`, Object.fromEntries(ROOM_MAP));
   });
 
@@ -169,11 +162,33 @@ io.on('connect', (socket) => {
     io.emit('begin_battle_players', Object.fromEntries(ROOM_MAP));
   });
 
-  socket.on('get_player_socket_id', async (room_id) => {
-    const connected_clients = await io.in(room_id).fetchSockets();
-    // console.log('Latest connected client:', connected_clients.map((client) => client.client.id));
-    console.log('Socket ID:', socket.id);
-    io.emit(`return_player_socket_id`, socket.id);
+  socket.on('track_players', (player_info) => {
+    const { room_name, player_name } = player_info;
+    const players = GAME_PLAYERS.get('Players');
+
+    players.push({
+      socket_id: socket.id,
+      room_name: room_name,
+      player_name: player_name, 
+    });
+
+  });
+
+  socket.on('get_player_with_socket_id', ( player_info ) => {
+    const { room_name, socket_id } = player_info;
+    const ROOM_MAP = GAME_STATES.get(room_name), ROOM_PLAYERS = ROOM_MAP.get('players');
+
+    const player_number = ROOM_PLAYERS.find((p) => p.socket_id === socket_id).player_number;
+    const player_name = ROOM_PLAYERS.find((p) => p.socket_id === socket_id).player_name;
+    
+    console.log('---- Socket ID: ', socket_id, ' Player Name: ', player_name, ' Room ID: ', room_name, '------');
+    console.log('Player Number: ', player_number);
+
+    io.emit('return_player_with_socket_id', { 
+      player_name: player_name,
+      player_number: player_number,
+    });
+
   });
 
 });

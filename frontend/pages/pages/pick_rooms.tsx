@@ -26,7 +26,8 @@ export default function Lobby(props: any) {
     const room_id = e.target.id;
     const join_event = {
       room_name: room_id, 
-      player_name: user_state.username
+      player_name: user_state.username,
+      player_tag: user_state.username_tag,
     }
 
     socket?.sck?.emit('join', JSON.stringify(join_event));
@@ -42,8 +43,14 @@ export default function Lobby(props: any) {
       payload: {
         num_players: room_state[room_id].players + 1,
       }
-    })
+    });
 
+    socket?.sck?.emit('track_players', { 
+      player_name: user_state.username,
+      room_name: room_id,
+      socket_id: socket?.sck?.id 
+    });
+    
   }
 
   return (

@@ -2,7 +2,6 @@ import React, { createContext, useReducer } from 'react';
 
 const init_state = {
     username: 'Player',
-    username_tag: 'none',
     room: 'none',
     bunnies: [],
     socket_id: null,

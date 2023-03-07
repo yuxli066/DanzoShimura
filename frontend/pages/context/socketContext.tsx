@@ -51,7 +51,7 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         const waitForSocketConnect = () => {
                 if (socket) {
                     socket.sck.on("connect", () => {
-                        console.log("Client connected to server! The client ID is: ", socket.sck.id);
+                        console.log("Client connected to server! The client ID is:", socket.sck.id);
                     });
                     
                     return () => socket.sck.close();

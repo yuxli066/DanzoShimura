@@ -26,14 +26,14 @@ interface bunny_button_type {
 
 export default function BattleRoom(props: any) {
   // shared contexts
-  const [ state, dispatch ] = useContext(user_context.UserContext);
+  const [ user_state, dispatch ] = useContext(user_context.UserContext);
   const socket = useContext(socket_context.SocketContext);
   
   // game states
   const [ game_state, set_game_state ] = useState<any>(null);
+  const [ player_number, set_player_number ] = useState<any>(null);
   const [ player_1_bunny, set_player_1_bunny ] = useState<any>("Player 1");
   const [ player_2_bunny, set_player_2_bunny ] = useState<any>("Player 2");
-  const [ current_player, set_current_player ] = useState<any>(null);
   
   const [ player1_bunny_buttons, set_player1_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
@@ -116,7 +116,7 @@ export default function BattleRoom(props: any) {
   }
   
   useEffect(() => {
-    socket?.sck?.emit('begin_battle', state.room);
+    socket?.sck?.emit('begin_battle', user_state.room);
   }, [socket]);
 
   useEffect(() => {
@@ -127,10 +127,30 @@ export default function BattleRoom(props: any) {
     }
   }, [socket]);
 
-  return ( game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
+  useEffect(() => {
+    socket?.sck?.emit('get_player_with_socket_id', {
+      room_name: user_state.room, 
+      socket_id: socket?.sck?.id
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.sck?.on('return_player_with_socket_id', (player_id) => {
+      set_player_number(player_id.player_number)
+    });
+    return () => {
+      socket?.sck?.off('return_player_with_socket_id');
+    }
+  }, [socket]);
+
+  return ( player_number && game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
     <>
       <div style={{'fontWeight': 'bold'}}>
-        {`SELECT YOUR BUNNIES & BEGIN BATTLE! ${game_state['players'].map((player: { [x: string]: any; }) => player['player_name']).toString()}`}
+        {
+          `SELECT YOUR BUNNIES & BEGIN BATTLE! 
+            ${game_state['players'].map((player: { [x: string]: any; }) => player['player_name']).toString()}\n
+          Current Player: ${player_number}`
+        }
       </div>
       <Box
         style={{
@@ -168,8 +188,8 @@ export default function BattleRoom(props: any) {
                       id={ `player1_${bunny}`}
                       value={ bunny }
                       onClick={ handle_player1_selection }
-                      disabled={ current_player === "player1" && player1_bunny_buttons[`player1_${bunny}`].disabled ? true : false }
-                      color={ player2_bunny_buttons[`player2_${bunny}`].disabled ? "success" : "inherit" }
+                      disabled={ player1_bunny_buttons[`player1_${bunny}`].disabled ? true : false }
+                      color={ player1_bunny_buttons[`player1_${bunny}`].disabled ? "success" : "inherit" }
                   >
                     { bunny }
                   </Button>
@@ -258,7 +278,7 @@ export default function BattleRoom(props: any) {
                       id={`player2_${bunny}`}
                       value={ bunny }
                       onClick={ handle_player2_selection }
-                      disabled={ current_player === "player2" && player2_bunny_buttons[`player2_${bunny}`].disabled }
+                      disabled={ player2_bunny_buttons[`player2_${bunny}`].disabled }
                       color={ player2_bunny_buttons[`player2_${bunny}`].disabled ? "success" : "inherit" }
                     >
                       { bunny }
