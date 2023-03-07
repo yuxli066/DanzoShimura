@@ -175,20 +175,12 @@ io.on('connect', (socket) => {
   });
 
   socket.on('get_player_with_socket_id', ( player_info ) => {
-    const { room_name, socket_id } = player_info;
-    const ROOM_MAP = GAME_STATES.get(room_name), ROOM_PLAYERS = ROOM_MAP.get('players');
+    const { room_name } = player_info;
+    const ROOM_MAP = GAME_STATES.get(room_name), 
+          ROOM_PLAYERS = ROOM_MAP.get('players');
 
-    const player_number = ROOM_PLAYERS.find((p) => p.socket_id === socket_id).player_number;
-    const player_name = ROOM_PLAYERS.find((p) => p.socket_id === socket_id).player_name;
+    io.emit('return_player_with_socket_id', ROOM_PLAYERS);
     
-    console.log('---- Socket ID: ', socket_id, ' Player Name: ', player_name, ' Room ID: ', room_name, '------');
-    console.log('Player Number: ', player_number);
-
-    io.emit('return_player_with_socket_id', { 
-      player_name: player_name,
-      player_number: player_number,
-    });
-
   });
 
 });

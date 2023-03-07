@@ -27,14 +27,14 @@ interface bunny_button_type {
 export default function BattleRoom(props: any) {
   // shared contexts
   const [ user_state, dispatch ] = useContext(user_context.UserContext);
+  const [ game_state, set_game_state ] = useState<any>(null);
   const socket = useContext(socket_context.SocketContext);
   
   // game states
-  const [ game_state, set_game_state ] = useState<any>(null);
   const [ player_number, set_player_number ] = useState<any>(null);
   const [ player_1_bunny, set_player_1_bunny ] = useState<any>("Player 1");
   const [ player_2_bunny, set_player_2_bunny ] = useState<any>("Player 2");
-  
+
   const [ player1_bunny_buttons, set_player1_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
 
@@ -135,15 +135,18 @@ export default function BattleRoom(props: any) {
   }, [socket]);
 
   useEffect(() => {
-    socket?.sck?.on('return_player_with_socket_id', (player_id) => {
-      set_player_number(player_id.player_number)
+    socket?.sck?.on('return_player_with_socket_id', (players_information) => {
+      console.log('Username: ', user_state.username);
+      const player_number = players_information.find((p_info: any) => p_info.player_name === user_state.username).player_number;
+      if (typeof window !== "undefined") { localStorage.setItem(user_state.username, player_number); }
     });
+    
     return () => {
       socket?.sck?.off('return_player_with_socket_id');
     }
   }, [socket]);
 
-  return ( player_number && game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
+  return ( game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
     <>
       <div style={{'fontWeight': 'bold'}}>
         {
