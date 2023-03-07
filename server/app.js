@@ -159,7 +159,7 @@ io.on('connect', (socket) => {
 
   socket.on('begin_battle', (room_name) => {
     const ROOM_MAP = GAME_STATES.get(room_name); 
-    io.emit('begin_battle_players', Object.fromEntries(ROOM_MAP));
+    // io.emit('begin_battle_players', Object.fromEntries(ROOM_MAP));
   });
 
   socket.on('track_players', (player_info) => {

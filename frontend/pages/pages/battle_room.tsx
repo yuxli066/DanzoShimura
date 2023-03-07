@@ -26,14 +26,14 @@ interface bunny_button_type {
 
 export default function BattleRoom(props: any) {
   // shared contexts
-  const [ user_state, dispatch ] = useContext(user_context.UserContext);
+  const [ user_state, user_dispatch ] = useContext(user_context.UserContext);
   const [ game_state, set_game_state ] = useState<any>(null);
   const socket = useContext(socket_context.SocketContext);
   
   // game states
-  const [ player_number, set_player_number ] = useState<any>(null);
   const [ player_1_bunny, set_player_1_bunny ] = useState<any>("Player 1");
   const [ player_2_bunny, set_player_2_bunny ] = useState<any>("Player 2");
+  const [ current_player, set_current_player ] = useState<any>('');
 
   const [ player1_bunny_buttons, set_player1_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
@@ -62,6 +62,8 @@ export default function BattleRoom(props: any) {
 
   const updateGameState = (game_state: any) => {
     set_game_state(game_state);
+    console.log('Player Numb from local storage', localStorage.getItem(user_state.username));
+    console.log('Game State Current Players Turn', game_state.game_state.current_turn);
   }
   const handle_player1_selection = (e: any) => {
     const selected_bunny = e.target.id;
@@ -114,29 +116,27 @@ export default function BattleRoom(props: any) {
       }
     });
   }
-  
+
   useEffect(() => {
-    socket?.sck?.emit('begin_battle', user_state.room);
+    socket?.sck?.emit('get_game_state', {
+      room_name: user_state.room,
+      player_name: user_state.username
+    });
   }, [socket]);
-
   useEffect(() => {
-    socket?.sck?.on('begin_battle_players', updateGameState);
-
+    socket?.sck?.on('game_state', updateGameState);
     return () => {
-      socket?.sck?.off('begin_battle_players');
+      socket?.sck?.off('game_state');
     }
   }, [socket]);
-
   useEffect(() => {
     socket?.sck?.emit('get_player_with_socket_id', {
       room_name: user_state.room, 
       socket_id: socket?.sck?.id
     });
   }, [socket]);
-
   useEffect(() => {
     socket?.sck?.on('return_player_with_socket_id', (players_information) => {
-      console.log('Username:', user_state.username);
       players_information.forEach((p_info: any) => localStorage.setItem(p_info.player_name, p_info.player_number));
     });
     
@@ -145,6 +145,7 @@ export default function BattleRoom(props: any) {
     }
 
   }, [socket]);
+
 
   return ( localStorage.getItem(user_state.username) && game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
     <>
@@ -182,16 +183,19 @@ export default function BattleRoom(props: any) {
               'gap': '0.5rem'
             }}
           >
+            <Box>
+              { "Player 1" }
+            </Box>
             { // player 1
                 game_state.game_state.player1.alive_bunnies.map((bunny: any, index: number) => (
                   <Button 
                       variant={ player1_bunny_buttons[`player1_${bunny}`].selected ? 'contained' : 'outlined' } 
                       size="large"
                       style={ button_styles }
-                      id={ `player1_${bunny}`}
+                      id={ `player1_${bunny}` }
                       value={ bunny }
                       onClick={ handle_player1_selection }
-                      disabled={ player1_bunny_buttons[`player1_${bunny}`].disabled ? true : false }
+                      disabled={ ( localStorage.getItem(user_state.username) !== 'player1' ) || player1_bunny_buttons[`player1_${bunny}`].disabled }
                       color={ player1_bunny_buttons[`player1_${bunny}`].disabled ? "success" : "inherit" }
                   >
                     { bunny }
@@ -272,6 +276,9 @@ export default function BattleRoom(props: any) {
               'gap': '0.5rem'
             }}
           >
+            <Box>
+              { "Player 2" }
+            </Box>
             { // player 2
                 game_state.game_state.player2.alive_bunnies.map((bunny: any, index: number) => (
                     <Button 
@@ -281,7 +288,7 @@ export default function BattleRoom(props: any) {
                       id={`player2_${bunny}`}
                       value={ bunny }
                       onClick={ handle_player2_selection }
-                      disabled={ player2_bunny_buttons[`player2_${bunny}`].disabled }
+                      disabled={ ( localStorage.getItem(user_state.username) !== 'player2') || player2_bunny_buttons[`player2_${bunny}`].disabled }
                       color={ player2_bunny_buttons[`player2_${bunny}`].disabled ? "success" : "inherit" }
                     >
                       { bunny }
