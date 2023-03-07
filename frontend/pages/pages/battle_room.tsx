@@ -136,23 +136,23 @@ export default function BattleRoom(props: any) {
 
   useEffect(() => {
     socket?.sck?.on('return_player_with_socket_id', (players_information) => {
-      console.log('Username: ', user_state.username);
-      const player_number = players_information.find((p_info: any) => p_info.player_name === user_state.username).player_number;
-      if (typeof window !== "undefined") { localStorage.setItem(user_state.username, player_number); }
+      console.log('Username:', user_state.username);
+      players_information.forEach((p_info: any) => localStorage.setItem(p_info.player_name, p_info.player_number));
     });
     
     return () => {
       socket?.sck?.off('return_player_with_socket_id');
     }
+
   }, [socket]);
 
-  return ( game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
+  return ( localStorage.getItem(user_state.username) && game_state && game_state.game_state.player1 && game_state.game_state.player2 ) ? (
     <>
       <div style={{'fontWeight': 'bold'}}>
         {
           `SELECT YOUR BUNNIES & BEGIN BATTLE! 
             ${game_state['players'].map((player: { [x: string]: any; }) => player['player_name']).toString()}\n
-          Current Player: ${player_number}`
+          Current Player: ${localStorage.getItem(user_state.username)}`
         }
       </div>
       <Box
