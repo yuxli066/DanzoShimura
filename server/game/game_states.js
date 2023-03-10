@@ -80,6 +80,20 @@ class GameStates {
 
         this.GAME_STATES = new Map();
         this.GAME_PLAYERS = new Map(); // track all players with corresponding socket ids
+        this.BUNNY_MAPPING = {
+          'bunny1': 1, 
+          'bunny2': 2,
+          'bunny3': 3, 
+          'bunny4': 4,
+          'bunny5': 5, 
+          'bunny6': 6,
+          'bunny7': 7, 
+          'bunny8': 8,
+          'bunny9': 9, 
+          'bunny10': 10,
+          'bunny11': 11, 
+          'bunny12': 12,
+        };
     }
   
     static getInstance() {
@@ -110,7 +124,7 @@ class GameStates {
       const serialized_map = [];
       for (const [key, value] of this.GAME_STATES) {
         serialized_map.push({
-          id: value['name'], 
+          room_id: Object.fromEntries(value)['name'], 
           playerInfo: Object.fromEntries(value)
         });
       }

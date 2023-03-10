@@ -2,7 +2,6 @@ import { useEffect, useContext, useState } from 'react';
 import Box from '@mui/material/Box';
 import socket_context from '../context/socketContext';
 import user_context from '../context/userContext';
-import room_context from '../context/roomContext';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Link from 'next/link';
