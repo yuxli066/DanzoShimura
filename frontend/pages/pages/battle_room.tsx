@@ -5,6 +5,7 @@ import user_context from '../context/userContext';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { styled } from '@mui/material/styles';
+import Backdrop from '@mui/material/Backdrop';
 
 const Div = styled('Div')(({ theme }) => ({
   ...theme.typography.button,
@@ -33,8 +34,14 @@ export default function BattleRoom(props: any) {
   // game states
   const [ player_1_bunny, set_player_1_bunny ] = useState<any>("Player 1");
   const [ player_2_bunny, set_player_2_bunny ] = useState<any>("Player 2");
-  const [ player_1_locked_in, set_player_1_locked_in ] = useState<boolean>(false);
-  const [ player_2_locked_in, set_player_2_locked_in ] = useState<boolean>(false);
+
+  // back drop open/close
+  const [ battle_result, set_battle_result ] = useState<any>(null);
+  const [open, setOpen] = useState(false);
+  const handleClose = () => {
+    
+    setOpen(false);
+  };
 
   const [ player1_bunny_buttons, set_player1_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
@@ -162,8 +169,9 @@ export default function BattleRoom(props: any) {
 
   }, [socket]);
   useEffect(() => {
-    socket?.sck?.on('battle_results', (results) => {
-      console.log('RESULTS', results);
+    socket?.sck?.on('battle_results', (battle_result) => {
+      set_battle_result(battle_result);
+      setOpen(!open);
     });
 
     return () => {
@@ -213,16 +221,16 @@ export default function BattleRoom(props: any) {
             { // player 1
                 game_state.game_state.player1.alive_bunnies.map((bunny: any, index: number) => (
                   <Button 
-                      variant={ player1_bunny_buttons[`player1_${bunny}`].selected ? 'contained' : 'outlined' } 
+                      variant={ player1_bunny_buttons[`player1_${bunny.bunny_name}`].selected ? 'contained' : 'outlined' } 
                       size="large"
                       style={ button_styles }
-                      id={ `player1_${bunny}` }
-                      value={ bunny }
+                      id={ `player1_${bunny.bunny_name}` }
+                      value={ bunny.bunny_name }
                       onClick={ handle_player1_selection }
-                      disabled={ ( localStorage.getItem(user_state.username) !== 'player1' ) || player1_bunny_buttons[`player1_${bunny}`].disabled }
-                      color={ player1_bunny_buttons[`player1_${bunny}`].disabled ? "success" : "inherit" }
+                      disabled={ ( localStorage.getItem(user_state.username) !== 'player1' ) || player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled }
+                      color={ player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
                   >
-                    { bunny }
+                    { bunny.bunny_name }
                   </Button>
                 ))
             }
@@ -306,16 +314,16 @@ export default function BattleRoom(props: any) {
             { // player 2
                 game_state.game_state.player2.alive_bunnies.map((bunny: any, index: number) => (
                     <Button 
-                      variant={ player2_bunny_buttons[`player2_${bunny}`].selected ? 'contained' : 'outlined' } 
+                      variant={ player2_bunny_buttons[`player2_${bunny.bunny_name}`].selected ? 'contained' : 'outlined' } 
                       size="large"
                       style={button_styles}
-                      id={`player2_${bunny}`}
-                      value={ bunny }
+                      id={`player2_${bunny.bunny_name}`}
+                      value={ bunny.bunny_name }
                       onClick={ handle_player2_selection }
-                      disabled={ ( localStorage.getItem(user_state.username) !== 'player2') || player2_bunny_buttons[`player2_${bunny}`].disabled }
-                      color={ player2_bunny_buttons[`player2_${bunny}`].disabled ? "success" : "inherit" }
+                      disabled={ ( localStorage.getItem(user_state.username) !== 'player2') || player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled }
+                      color={ player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
                     >
-                      { bunny }
+                      { bunny.bunny_name }
                   </Button>
                 ))
             }
@@ -341,6 +349,13 @@ export default function BattleRoom(props: any) {
             </Button>
           </ButtonGroup>
         </Box>
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={open}
+          onClick={handleClose}
+        >
+          { battle_result + " WON!!! " }
+        </Backdrop>
       </Box>
     </>
   ) : (<>

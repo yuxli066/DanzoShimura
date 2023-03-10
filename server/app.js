@@ -67,7 +67,31 @@ const game = GameStates.getInstance();
 game.init_states() /** Set up global room states */
 const GAME_STATES = game.GAME_STATES;
 const GAME_PLAYERS = game.GAME_PLAYERS;
-const BUNNY_MAPPING = game.BUNNY_MAPPING;
+const BUNNY_POWER_MAPPING = game.BUNNY_MAPPING;
+
+const battle = (bunny1, bunny2) => {
+  
+  let battle_result = ''; 
+
+  if (bunny1.power_level > bunny2.power_level) {
+    bunny2.alive = false;
+    battle_result = bunny1.bunny_name;
+  }
+
+  if (bunny2.power_level > bunny1.power_level) { 
+    bunny1.alive = false;
+    battle_result = bunny1.bunny_name;
+  }
+
+  if (bunny2.power_level === bunny1.power_level) { 
+    bunny1.alive = false;
+    bunny2.alive = false;
+    battle_result = 'tie';
+  }
+
+  return battle_result;
+
+}
 
 io.on('connect', (socket) => {
   console.log(`new websocket client with id ${socket.id} connected!`);
@@ -109,7 +133,6 @@ io.on('connect', (socket) => {
     }
     game.print('Joining Rooms:');
   });
-
   socket.on('check_rooms', () => {
     for (let [room_name, room_attributes] of GAME_STATES.entries()) {
       const num_players = room_attributes.get('players');
@@ -126,20 +149,18 @@ io.on('connect', (socket) => {
     console.log(game.serialize())
     io.emit('room_status', game.serialize());
   });
-
   socket.on('get_game_state', ({room_name}) => {
     const ROOM_MAP = GAME_STATES.get(room_name) ? GAME_STATES.get(room_name) : new Map();
     io.emit(`game_state`, Object.fromEntries(ROOM_MAP));
   });
-
   socket.on('player_ready', ({ room_name, player_name, selected_bunnies }) => {
     const ROOM_MAP = GAME_STATES.get(room_name), 
           CURRENT_GAME_STATE = ROOM_MAP.get('game_state');
     
     const all_bunnies = selected_bunnies.map((b) => ({
       bunny_name: b, 
-      power_level: bunny_power_level[b], 
-      alive: true, 
+      power_level: BUNNY_POWER_MAPPING[b], 
+      alive: true,
       selected: false 
     }));
 
@@ -163,20 +184,19 @@ io.on('connect', (socket) => {
 
     game.print('Getting Game State:');
   });
-
   socket.on('begin_battle', (battle_info) => {
     const { room, player, selected_bunny } = battle_info; 
     const ROOM_MAP = GAME_STATES.get(room), 
                      GAME_STATE = ROOM_MAP.get('game_state');
-    
-    console.log('Room State:', GAME_STATE);
 
     GAME_STATE[player].selection_complete = true;
-    GAME_STATE[player].alive_bunnies.find((bunny) => bunny.bunny_name === selected_bunny);
-
+    const sel_bunny = GAME_STATE[player].alive_bunnies.find((bunny) => bunny.bunny_name === selected_bunny.split('_')[1]);
+    sel_bunny.selected = true;
     if ( GAME_STATE['player1'].selection_complete && GAME_STATE['player2'].selection_complete ) {
-      // Do battle, compare power levels
-      io.emit('battle_results', Object.fromEntries(GAME_STATE));
+      const player1_bunny = GAME_STATE['player1'].alive_bunnies.find((bunny) => bunny.selected === true); 
+      const player2_bunny = GAME_STATE['player2'].alive_bunnies.find((bunny) => bunny.selected === true); 
+      const result = battle(player1_bunny, player2_bunny);
+      io.emit('battle_results', result);
     }
   });
   socket.on('track_players', (player_info) => {
@@ -194,9 +214,7 @@ io.on('connect', (socket) => {
     const { room_name } = player_info;
     const ROOM_MAP = GAME_STATES.get(room_name), 
           ROOM_PLAYERS = ROOM_MAP.get('players');
-
     io.emit('return_player_with_socket_id', ROOM_PLAYERS);
-    
   });
 
 });
