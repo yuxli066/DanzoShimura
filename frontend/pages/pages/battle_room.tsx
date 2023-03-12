@@ -22,6 +22,7 @@ interface bunny_button_type {
   [name: string]: {
     selected?: boolean,
     disabled?: boolean,
+    alive?: boolean,
   }
 }
 
@@ -37,19 +38,18 @@ export default function BattleRoom(props: any) {
 
   // back drop open/close
   const [ battle_result, set_battle_result ] = useState<any>(null);
-  const [open, setOpen] = useState(false);
+  const [ open_popover, set_open_popover ] = useState(false);
   const handleClose = () => {
-    
-    setOpen(false);
+    set_open_popover(false);
   };
 
   const [ player1_bunny_buttons, set_player1_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
-
     for (let i = 0; i < 12; ++i) {
       bunny_btns[`player1_bunny${i+1}`] = {
         selected: false,
         disabled: false,
+        alive: true,
       };
     }
 
@@ -57,11 +57,11 @@ export default function BattleRoom(props: any) {
   });
   const [ player2_bunny_buttons, set_player2_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
-    
     for (let i = 0; i < 12; ++i) {
       bunny_btns[`player2_bunny${i+1}`] = {
         selected: false,
         disabled: false,
+        alive: true,
       };
     }
 
@@ -82,9 +82,11 @@ export default function BattleRoom(props: any) {
       return { 
         ...player1_bunny_buttons, 
         [selected_bunny]: {
-          selected: true
+          ...player1_bunny_buttons[selected_bunny],
+          selected: true,
         }
       }
+
     });
     set_player_1_bunny(selected_bunny);
   }
@@ -98,15 +100,15 @@ export default function BattleRoom(props: any) {
       return { 
         ...player2_bunny_buttons, 
         [selected_bunny]: {
-          selected: true
+          ...player2_bunny_buttons[selected_bunny],
+          selected: true,
         }
       }
+
     });
     set_player_2_bunny(selected_bunny);
   }
   const handle_lockin = (e: any) => {
-    console.log('Current player locking in:', e.target.id);
-
     if (e.target.id === 'player1') {
       set_player1_bunny_buttons(() => {
         for (let i = 0; i < 12; ++i) {
@@ -122,7 +124,6 @@ export default function BattleRoom(props: any) {
         selected_bunny: player_1_bunny
       });
     };
-
     if (e.target.id === 'player2') { 
       set_player2_bunny_buttons(() => {
         for (let i = 0; i < 12; ++i) {
@@ -170,8 +171,69 @@ export default function BattleRoom(props: any) {
   }, [socket]);
   useEffect(() => {
     socket?.sck?.on('battle_results', (battle_result) => {
-      set_battle_result(battle_result);
-      setOpen(!open);
+      set_battle_result(battle_result.winner.toUpperCase());
+      set_open_popover(!open_popover);
+
+
+      if (battle_result.winner === "player1") { 
+        set_player1_bunny_buttons(() => {
+          for (let i = 0; i < 12; ++i) {
+            if (player1_bunny_buttons[`player1_bunny${i+1}`].alive)
+              player1_bunny_buttons[`player1_bunny${i+1}`].disabled = false; 
+          }
+          return {
+            ...player1_bunny_buttons
+          }
+        });
+  
+        set_player2_bunny_buttons(() => {
+          for (let i = 0; i < 12; ++i) {
+            if (player2_bunny_buttons[`player2_bunny${i+1}`].alive)
+              player2_bunny_buttons[`player2_bunny${i+1}`].disabled = false; 
+          }
+          return { 
+            ...player2_bunny_buttons,
+            [`player2_${battle_result.player2_bunny}`]: {
+              selected: false,
+              alive: false,
+              disabled: true
+            }   
+          }
+        });
+      }
+
+      if (battle_result.winner === "player2") { 
+        set_player1_bunny_buttons(() => {
+          for (let i = 0; i < 12; ++i) {
+            if (player1_bunny_buttons[`player1_bunny${i+1}`].alive)
+              player1_bunny_buttons[`player1_bunny${i+1}`].disabled = false; 
+          }
+  
+          return {
+            ...player1_bunny_buttons,
+            [`player1_${battle_result.player1_bunny}`]: {
+              selected: false,
+              alive: false,
+              disabled: true
+            }  
+          }
+        });
+  
+        set_player2_bunny_buttons(() => {
+          for (let i = 0; i < 12; ++i) {
+            if (player2_bunny_buttons[`player2_bunny${i+1}`].alive)
+              player2_bunny_buttons[`player2_bunny${i+1}`].disabled = false; 
+          }
+  
+          return { 
+            ...player2_bunny_buttons,
+          }
+        });
+      }
+      console.log('Player 1 Buttons:', player1_bunny_buttons);
+      set_player_1_bunny(null);
+      set_player_2_bunny(null);
+
     });
 
     return () => {
@@ -228,7 +290,7 @@ export default function BattleRoom(props: any) {
                       value={ bunny.bunny_name }
                       onClick={ handle_player1_selection }
                       disabled={ ( localStorage.getItem(user_state.username) !== 'player1' ) || player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled }
-                      color={ player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
+                      color={ !player1_bunny_buttons[`player1_${bunny.bunny_name}`].alive ? "primary" : player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
                   >
                     { bunny.bunny_name }
                   </Button>
@@ -321,7 +383,7 @@ export default function BattleRoom(props: any) {
                       value={ bunny.bunny_name }
                       onClick={ handle_player2_selection }
                       disabled={ ( localStorage.getItem(user_state.username) !== 'player2') || player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled }
-                      color={ player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
+                      color={ !player2_bunny_buttons[`player2_${bunny.bunny_name}`].alive ? "primary" : player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
                     >
                       { bunny.bunny_name }
                   </Button>
@@ -351,7 +413,7 @@ export default function BattleRoom(props: any) {
         </Box>
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          open={open}
+          open={open_popover}
           onClick={handleClose}
         >
           { battle_result + " WON!!! " }

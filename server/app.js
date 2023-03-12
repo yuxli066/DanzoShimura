@@ -71,25 +71,34 @@ const BUNNY_POWER_MAPPING = game.BUNNY_MAPPING;
 
 const battle = (bunny1, bunny2) => {
   
-  let battle_result = ''; 
+  let winning_bunny = '', 
+      winner = '';
 
   if (bunny1.power_level > bunny2.power_level) {
     bunny2.alive = false;
-    battle_result = bunny1.bunny_name;
+    winner = 'player1';
+    winning_bunny = bunny1.bunny_name;
   }
 
   if (bunny2.power_level > bunny1.power_level) { 
     bunny1.alive = false;
-    battle_result = bunny1.bunny_name;
+    winner = 'player2';
+    winning_bunny = bunny2.bunny_name;
   }
 
   if (bunny2.power_level === bunny1.power_level) { 
     bunny1.alive = false;
     bunny2.alive = false;
-    battle_result = 'tie';
+    winner = 'tie';
+    winning_bunny = null;
   }
 
-  return battle_result;
+  return {
+    winner: winner,
+    winning_bunny: winning_bunny, 
+    player1_bunny: bunny1.bunny_name, 
+    player2_bunny: bunny2.bunny_name
+  }
 
 }
 
@@ -186,17 +195,25 @@ io.on('connect', (socket) => {
   });
   socket.on('begin_battle', (battle_info) => {
     const { room, player, selected_bunny } = battle_info; 
+    console.log('Selected Bunnies', selected_bunny);
     const ROOM_MAP = GAME_STATES.get(room), 
                      GAME_STATE = ROOM_MAP.get('game_state');
 
     GAME_STATE[player].selection_complete = true;
     const sel_bunny = GAME_STATE[player].alive_bunnies.find((bunny) => bunny.bunny_name === selected_bunny.split('_')[1]);
     sel_bunny.selected = true;
+    
     if ( GAME_STATE['player1'].selection_complete && GAME_STATE['player2'].selection_complete ) {
       const player1_bunny = GAME_STATE['player1'].alive_bunnies.find((bunny) => bunny.selected === true); 
       const player2_bunny = GAME_STATE['player2'].alive_bunnies.find((bunny) => bunny.selected === true); 
       const result = battle(player1_bunny, player2_bunny);
+      
       io.emit('battle_results', result);
+
+      GAME_STATE['player1'].selection_complete = false; 
+      GAME_STATE['player2'].selection_complete = false;
+      player1_bunny.selected = false;
+      player2_bunny.selected = false;
     }
   });
   socket.on('track_players', (player_info) => {
