@@ -2,6 +2,7 @@ import { useEffect, useContext, useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import socket_context from '../context/socketContext';
 import user_context from '../context/userContext';
+import room_context from '../context/roomContext';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { styled } from '@mui/material/styles';
@@ -33,8 +34,8 @@ export default function BattleRoom(props: any) {
   const socket = useContext(socket_context.SocketContext);
   
   // game states
-  const [ player1_lockedin, set_player1_lockedin ] = useState<boolean>(false);
-  const [ player2_lockedin, set_player2_lockedin ] = useState<boolean>(false);
+  const [ player1_lockedin, set_player1_lockedin ] = useState<string>("Player 1");
+  const [ player2_lockedin, set_player2_lockedin ] = useState<string>("Player 2");
   const [ player_1_bunny, set_player_1_bunny ] = useState<any>("Player 1");
   const [ player_2_bunny, set_player_2_bunny ] = useState<any>("Player 2");
 
@@ -71,61 +72,57 @@ export default function BattleRoom(props: any) {
     set_game_state(game_state);
     console.log('Player Numb from local storage', localStorage.getItem(user_state.username));
     console.log('Game State Current Players Turn', game_state.game_state.current_turn);
-  }
-  const handle_player1_selection = (e: any) => {
+  };
+  const handle_selection = (e: any) => {
     const selected_bunny = e.target.id;
-    for (let i = 0; i < 12; ++i) {
-      player1_bunny_buttons[`player1_bunny${i+1}`].selected = false;
-    }
-
-    player1_bunny_buttons[selected_bunny] = {
-        ...player1_bunny_buttons[selected_bunny],
-        selected: true,
-    }
-
-    set_player_1_bunny(selected_bunny);
-  } 
+    if (selected_bunny.includes('player1')) {
+      for (let i = 0; i < 12; ++i) {
+        player1_bunny_buttons[`player1_bunny${i+1}`].selected = false;
+      }
   
-  const handle_player2_selection = (e: any) => {
-    const selected_bunny = e.target.id;
-    for (let i = 0; i < 12; ++i) {
-      player2_bunny_buttons[`player2_bunny${i+1}`].selected = false;
-    }
-    player2_bunny_buttons[selected_bunny] = {
-      ...player2_bunny_buttons[selected_bunny],
-      selected: true,
+      player1_bunny_buttons[selected_bunny] = {
+          ...player1_bunny_buttons[selected_bunny],
+          selected: true,
+      }
+      socket?.sck?.emit('set_player1_bunny', selected_bunny);
+      // set_player_1_bunny(selected_bunny);
     }
 
-    set_player_2_bunny(selected_bunny);
-  }
+    if (selected_bunny.includes('player2')) {
+      for (let i = 0; i < 12; ++i) {
+        player2_bunny_buttons[`player2_bunny${i+1}`].selected = false;
+      }
+      player2_bunny_buttons[selected_bunny] = {
+        ...player2_bunny_buttons[selected_bunny],
+        selected: true,
+      }
+      socket?.sck?.emit('set_player2_bunny', selected_bunny);
+      // set_player_2_bunny(selected_bunny);
+    }
+  };
   const handle_lockin = (e: any) => {
     if (e.target.id === 'player1') {
-
       for (let i = 0; i < 12; ++i) {
         player1_bunny_buttons[`player1_bunny${i+1}`].disabled = true; 
       }
-
       socket?.sck?.emit('begin_battle', { 
         room: user_state.room, 
         player: 'player1', 
         selected_bunny: player_1_bunny
       });
-
-      set_player1_lockedin(true);
+      set_player1_lockedin(player_1_bunny);
     };
 
     if (e.target.id === 'player2') { 
       for (let i = 0; i < 12; ++i) {
         player2_bunny_buttons[`player2_bunny${i+1}`].disabled = true;
       }
-
       socket?.sck?.emit('begin_battle', { 
         room: user_state.room,
         player: 'player2',
         selected_bunny: player_2_bunny
       });
-
-      set_player2_lockedin(true);
+      set_player2_lockedin(player_2_bunny);
     };
   };
 
@@ -186,13 +183,25 @@ export default function BattleRoom(props: any) {
 
       set_player_1_bunny(null);
       set_player_2_bunny(null);
-      set_player1_lockedin(false);
-      set_player2_lockedin(false);
+      set_player1_lockedin("Player 1");
+      set_player2_lockedin("Player 2");
 
     });
 
     return () => {
       socket?.sck?.off('battle_results');
+    }
+  }, [socket]);
+  useEffect(() => {
+    socket?.sck?.on('returned_player1_bunny', (p_1_bunny) => set_player_1_bunny(p_1_bunny));
+    return () => {
+      socket?.sck?.off('returned_player1_bunny');
+    }
+  }, [socket]);
+  useEffect(() => {
+    socket?.sck?.on('returned_player2_bunny', (p_2_bunny) => set_player_2_bunny(p_2_bunny));
+    return () => {
+      socket?.sck?.off('returned_player2_bunny');
     }
   }, [socket]);
 
@@ -243,7 +252,7 @@ export default function BattleRoom(props: any) {
                       style={ button_styles }
                       id={ `player1_${bunny.bunny_name}` }
                       value={ bunny.bunny_name }
-                      onClick={ handle_player1_selection }
+                      onClick={ handle_selection }
                       disabled={ ( localStorage.getItem(user_state.username) !== 'player1' ) || player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled }
                       color={ !player1_bunny_buttons[`player1_${bunny.bunny_name}`].alive ? "primary" : player1_bunny_buttons[`player1_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
                   >
@@ -336,7 +345,7 @@ export default function BattleRoom(props: any) {
                       style={button_styles}
                       id={`player2_${bunny.bunny_name}`}
                       value={ bunny.bunny_name }
-                      onClick={ handle_player2_selection }
+                      onClick={ handle_selection }
                       disabled={ ( localStorage.getItem(user_state.username) !== 'player2') || player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled }
                       color={ !player2_bunny_buttons[`player2_${bunny.bunny_name}`].alive ? "primary" : player2_bunny_buttons[`player2_${bunny.bunny_name}`].disabled ? "success" : "inherit" }
                     >

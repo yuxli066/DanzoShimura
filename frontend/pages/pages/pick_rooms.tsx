@@ -37,14 +37,6 @@ export default function Lobby(props: any) {
       payload: room_id,
     });
 
-    /** Remove this state update when cleaning up code */
-    room_dispatch({
-      type: 'UPDATE NUM PLAYERS', 
-      payload: {
-        num_players: room_state[room_id].players + 1,
-      }
-    });
-
     socket?.sck?.emit('track_players', { 
       player_name: user_state.username,
       room_name: room_id,

@@ -105,7 +105,6 @@ const battle = (bunny1, bunny2) => {
 io.on('connect', (socket) => {
   console.log(`new websocket client with id ${socket.id} connected!`);
   socket.on('disconnect', () => console.log(`client ${socket.id} disconnected!`));
-
   // adapted from: https://stackoverflow.com/a/40413809
   // using rooms as opposed to namespaces for now so that we minimize the back-and forth between socket and client
   // (namespaces would mean the server creating the namespace and then the client connecting to the namespace, so an extra trip)
@@ -227,13 +226,14 @@ io.on('connect', (socket) => {
     });
 
   });
-  socket.on('get_player_with_socket_id', ( player_info ) => {
+  socket.on('get_player_with_socket_id', (player_info) => {
     const { room_name } = player_info;
     const ROOM_MAP = GAME_STATES.get(room_name), 
           ROOM_PLAYERS = ROOM_MAP.get('players');
     io.emit('return_player_with_socket_id', ROOM_PLAYERS);
   });
-
+  socket.on('set_player1_bunny', (player_1_bunny) => io.emit('returned_player1_bunny', player_1_bunny));
+  socket.on('set_player2_bunny', (player_2_bunny) => io.emit('returned_player2_bunny', player_2_bunny));
 });
 
 module.exports = {
