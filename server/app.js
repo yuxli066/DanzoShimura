@@ -194,7 +194,6 @@ io.on('connect', (socket) => {
   });
   socket.on('begin_battle', (battle_info) => {
     const { room, player, selected_bunny } = battle_info; 
-    console.log('Selected Bunnies', selected_bunny);
     const ROOM_MAP = GAME_STATES.get(room), 
                      GAME_STATE = ROOM_MAP.get('game_state');
 

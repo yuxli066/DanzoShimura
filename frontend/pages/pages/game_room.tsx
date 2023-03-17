@@ -40,7 +40,6 @@ export default function GameRoom(props: any) {
   const [ selected_bunnies, set_selected_bunnies ] = useState<any[]>([]);
 
   const updateGameState = (game_state: any) => {
-    console.log("Game State:", game_state);
     set_current_game_state(game_state);
   };
   const handleSelection = (e: any) => {
@@ -73,7 +72,6 @@ export default function GameRoom(props: any) {
     set_selected_bunnies(() => []);
   };
   const playerIsReady = (e: any) => {
-    console.log("player is ready!");
     socket?.sck?.emit('player_ready', {
       room_name: user_state.room,
       player_name: user_state.username,
