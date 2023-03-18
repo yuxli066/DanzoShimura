@@ -28,6 +28,7 @@ export default function GameRoom(props: any) {
   
   // game states
   const [ current_game_state, set_current_game_state ] = useState<any>(null);
+  const [ available_bunnies, set_available_bunnies ] = useState<any>(null);
   const [ bunny_buttons, set_bunny_buttons ] = useState(() => {
     const bunny_btns = {} as bunny_button_type;
     for (let i = 0; i < 12; ++i) {
@@ -39,9 +40,15 @@ export default function GameRoom(props: any) {
   });
   const [ selected_bunnies, set_selected_bunnies ] = useState<any[]>([]);
 
+  /** Update game states */
   const updateGameState = (game_state: any) => {
     set_current_game_state(game_state);
   };
+  const updateAvailableBunnies = (available_bunnies: any) => {
+    set_available_bunnies(available_bunnies);
+  };
+
+  /** Handle bunny selections */
   const handleSelection = (e: any) => {
     console.log("selecting bunnies");
     const selected_bunny = e.target.id;
@@ -53,6 +60,8 @@ export default function GameRoom(props: any) {
     });
     set_selected_bunnies(() => (selected_bunnies.concat(selected_bunny)));
   };
+
+  /** Reset bunny selections */
   const resetSelection = () => {
     set_bunny_buttons(() => {
       const bunny_btns = {} as bunny_button_type;
@@ -84,6 +93,8 @@ export default function GameRoom(props: any) {
     });
 
   };
+
+  /** Getting Current State */
   useEffect(() => {
     socket?.sck?.emit('get_game_state', {
       room_name: user_state.room,
@@ -94,6 +105,20 @@ export default function GameRoom(props: any) {
     socket?.sck?.on('game_state', updateGameState);
     return () => {
       socket?.sck?.off('game_state');
+    }
+  }, [socket]);
+
+  /** Getting available bunnies */
+  useEffect(() => {
+    socket?.sck?.emit('get_available_bunnies', {
+      room_name: user_state.room,
+      player_name: user_state.username
+    });
+  }, [socket]);
+  useEffect(() => {
+    socket?.sck?.on('available_bunnies', updateAvailableBunnies);
+    return () => {
+      socket?.sck?.off('available_bunnies');
     }
   }, [socket]);
 
@@ -126,8 +151,9 @@ export default function GameRoom(props: any) {
             'width': '75%',
             'flexWrap': 'wrap'
           }}  
-        >{
-          current_game_state.available_bunnies.map((bunny: any, index: number) => (
+        >
+        {
+          available_bunnies.map((bunny: any, index: number) => (
             <Button 
               variant={bunny_buttons[`${bunny.name}`] ? 'contained' : 'outlined' } 
               size="large"

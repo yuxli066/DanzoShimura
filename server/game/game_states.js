@@ -1,10 +1,10 @@
-const BUNNIES = require('./bunnies')
+const { AVAILABLE_BUNNIES, GAME_STATES_OBJECT } = require('./bunnies');
 
 class GameStates {
     constructor() {
         this.NUM_ROOMS = 3;
-        this.AVAILABLE_BUNNIES = BUNNIES.default.AVAILABLE_BUNNIES;
-        this.GAME_STATES_OBJECT = BUNNIES.default.GAME_STATES;
+        this.GAME_PLAYERS = new Map(); // track all players with corresponding socket ids
+        this.AVAILABLE_BUNNIES = AVAILABLE_BUNNIES;
 
         /** track all game states */
         this.GAME_STATES = new Map();
@@ -17,7 +17,7 @@ class GameStates {
       return this.instance;
     }
 
-    /**  */
+    /**  Initalize Game States */
     init_states() {
         for (let i = 0; i < this.NUM_ROOMS; ++i) {
           const init_state = new Map();
@@ -27,13 +27,15 @@ class GameStates {
           init_state.set('status', 'Not Ready');
           init_state.set('num_players', 0);
           init_state.set('players', []);
-          init_state.set('alive_bunnies', AVAILABLE_BUNNIES);
-          init_state.set('')
+          init_state.set('alive_bunnies', []);
+          init_state.set('game_state', GAME_STATES_OBJECT);
 
           this.GAME_STATES.set(room_name, init_state);
           this.GAME_STATES.set(room_name, init_state);
           this.GAME_STATES.set(room_name, init_state);
         };
+        
+        this.GAME_PLAYERS.set('players', []);
     }
 
     print(text) {
@@ -55,6 +57,6 @@ class GameStates {
       }
       return serialized_map
     }
-}
+};
 
 module.exports = { GameStates };

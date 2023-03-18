@@ -67,6 +67,7 @@ const game = GameStates.getInstance();
 game.init_states() /** Set up global room states */
 const GAME_STATES = game.GAME_STATES;
 const GAME_PLAYERS = game.GAME_PLAYERS;
+const AVAILABLE_BUNNIES = game.AVAILABLE_BUNNIES;
 const BUNNY_POWER_MAPPING = game.BUNNY_MAPPING;
 
 const battle = (bunny1, bunny2) => {
@@ -108,7 +109,7 @@ io.on('connect', (socket) => {
   // adapted from: https://stackoverflow.com/a/40413809
   // using rooms as opposed to namespaces for now so that we minimize the back-and forth between socket and client
   // (namespaces would mean the server creating the namespace and then the client connecting to the namespace, so an extra trip)
-  socket.on('join', (player_info) => {
+  socket.on('join', ( player_info ) => {
     const { room_name, player_name } = JSON.parse(player_info);
     console.log(`Client with client id: ${socket.id}, joining room: ${room_name}`);
     
@@ -157,9 +158,18 @@ io.on('connect', (socket) => {
     console.log(game.serialize())
     io.emit('room_status', game.serialize());
   });
-  socket.on('get_game_state', ({room_name}) => {
+  socket.on('get_game_state', ({ room_name }) => {
     const ROOM_MAP = GAME_STATES.get(room_name) ? GAME_STATES.get(room_name) : new Map();
     io.emit(`game_state`, Object.fromEntries(ROOM_MAP));
+  });
+  socket.on('track_players', ( player_info ) => {
+    const { room_name, player_name } = player_info;
+    const players = GAME_PLAYERS.get('players');
+    players.push({
+      socket_id: socket.id,
+      room_name: room_name,
+      player_name: player_name, 
+    });
   });
   socket.on('player_ready', ({ room_name, player_name, selected_bunnies }) => {
     const ROOM_MAP = GAME_STATES.get(room_name), 
@@ -192,7 +202,7 @@ io.on('connect', (socket) => {
 
     game.print('Getting Game State:');
   });
-  socket.on('begin_battle', (battle_info) => {
+  socket.on('begin_battle', ( battle_info ) => {
     const { room, player, selected_bunny } = battle_info; 
     const ROOM_MAP = GAME_STATES.get(room), 
                      GAME_STATE = ROOM_MAP.get('game_state');
@@ -214,23 +224,13 @@ io.on('connect', (socket) => {
       player2_bunny.selected = false;
     }
   });
-  socket.on('track_players', (player_info) => {
-    const { room_name, player_name } = player_info;
-    const players = GAME_PLAYERS.get('Players');
-
-    players.push({
-      socket_id: socket.id,
-      room_name: room_name,
-      player_name: player_name, 
-    });
-
-  });
-  socket.on('get_player_with_socket_id', (player_info) => {
+  socket.on('get_player_with_socket_id', ( player_info ) => {
     const { room_name } = player_info;
     const ROOM_MAP = GAME_STATES.get(room_name), 
           ROOM_PLAYERS = ROOM_MAP.get('players');
     io.emit('return_player_with_socket_id', ROOM_PLAYERS);
   });
+  socket.on('get_available_bunnies', (available_bunnies) => io.emit('available_bunnies', ));
   socket.on('set_player1_bunny', (player_1_bunny) => io.emit('returned_player1_bunny', player_1_bunny));
   socket.on('set_player2_bunny', (player_2_bunny) => io.emit('returned_player2_bunny', player_2_bunny));
 });
