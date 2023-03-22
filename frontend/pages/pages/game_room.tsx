@@ -6,19 +6,34 @@ import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Link from 'next/link';
 
+interface bunny_button_type {
+  [name: string]: boolean
+};
+
+const importAll = (imports: any) =>
+  imports
+    .keys()
+    .map((item: string) => ({
+      [item.replace(/(\.\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item),
+    }));
+
 const Div = styled('Div')(({ theme }) => ({
   ...theme.typography.button,
   backgroundColor: theme.palette.background.paper,
   padding: theme.spacing(1),
 }));
 
-const button_styles = {
-  'padding': '3em',
-  'flex': '0 0 15%'
+const bunny_button_styles = (image_url: string) => {
+  return { 
+    'backgroundImage': `url(${})`,
+    'padding': '3em',
+    'flex': '0 0 15%', 
+  };
 };
 
-interface bunny_button_type {
-  [name: string]: boolean
+const button_styles = {
+  'padding': '3em',
+  'flex': '0 0 15%', 
 }
 
 export default function GameRoom(props: any) {
@@ -27,6 +42,8 @@ export default function GameRoom(props: any) {
   const socket = useContext(socket_context.SocketContext);
   
   // game states
+  const [ is_loading, set_loading ] = useState<boolean>(true);
+  const [ bunny_images, set_bunny_images ] = useState<any>(null);
   const [ current_game_state, set_current_game_state ] = useState<any>(null);
   const [ available_bunnies, set_available_bunnies ] = useState<any>(null);
   const [ bunny_buttons, set_bunny_buttons ] = useState(() => {
@@ -110,10 +127,7 @@ export default function GameRoom(props: any) {
 
   /** Getting available bunnies */
   useEffect(() => {
-    socket?.sck?.emit('get_available_bunnies', {
-      room_name: user_state.room,
-      player_name: user_state.username
-    });
+    socket?.sck?.emit('get_available_bunnies');
   }, [socket]);
   useEffect(() => {
     socket?.sck?.on('available_bunnies', updateAvailableBunnies);
@@ -122,7 +136,21 @@ export default function GameRoom(props: any) {
     }
   }, [socket]);
 
-  return (current_game_state?.status === 'Ready') ? (
+  useEffect(() => {
+    set_loading(true);
+    const loadImages = new Promise((resolve) =>
+      resolve(require.context('../../bunnies', false, /\.(jpe?g|png)/i)),
+    );
+    Promise.all([loadImages])
+      .then((data) => {
+        let images = Object.assign({}, ...importAll(data[0]));
+        // delete Object.assign({}, {[]: [] })[];
+        // console.log(images);
+        set_bunny_images(images);
+      }).finally(() => set_loading(false));
+  }, []);
+
+  return (!is_loading && current_game_state?.status === 'Ready' && available_bunnies) ? (
     <>
       <Div>
         { `Welcome ${user_state.username} to ${user_state.room}` }
@@ -157,9 +185,9 @@ export default function GameRoom(props: any) {
             <Button 
               variant={bunny_buttons[`${bunny.name}`] ? 'contained' : 'outlined' } 
               size="large"
-              style={button_styles}
+              style={ bunny_button_styles() }
               id={`${bunny.name}`}
-              value={bunny}
+              value={ bunny }
               onClick={ handleSelection }
             >
               { bunny.name }

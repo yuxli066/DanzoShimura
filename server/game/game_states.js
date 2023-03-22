@@ -34,7 +34,6 @@ class GameStates {
           this.GAME_STATES.set(room_name, init_state);
           this.GAME_STATES.set(room_name, init_state);
         };
-        
         this.GAME_PLAYERS.set('players', []);
     }
 
