@@ -230,7 +230,7 @@ io.on('connect', (socket) => {
           ROOM_PLAYERS = ROOM_MAP.get('players');
     io.emit('return_player_with_socket_id', ROOM_PLAYERS);
   });
-  socket.on('get_available_bunnies', () => io.emit('available_bunnies', AVAILABLE_BUNNIES));
+  socket.on('get_available_bunnies', (null_val) => io.emit('available_bunnies', AVAILABLE_BUNNIES));
   socket.on('set_player1_bunny', (player_1_bunny) => io.emit('returned_player1_bunny', player_1_bunny));
   socket.on('set_player2_bunny', (player_2_bunny) => io.emit('returned_player2_bunny', player_2_bunny));
 });

@@ -25,7 +25,7 @@ const Div = styled('Div')(({ theme }) => ({
 
 const bunny_button_styles = (image_url: string) => {
   return { 
-    'backgroundImage': `url(${})`,
+    'backgroundImage': `url(${image_url})`,
     'padding': '3em',
     'flex': '0 0 15%', 
   };
@@ -62,6 +62,7 @@ export default function GameRoom(props: any) {
     set_current_game_state(game_state);
   };
   const updateAvailableBunnies = (available_bunnies: any) => {
+    console.log('Bunnies', available_bunnies);
     set_available_bunnies(available_bunnies);
   };
 
@@ -127,7 +128,7 @@ export default function GameRoom(props: any) {
 
   /** Getting available bunnies */
   useEffect(() => {
-    socket?.sck?.emit('get_available_bunnies');
+    socket?.sck?.emit('get_available_bunnies', null);
   }, [socket]);
   useEffect(() => {
     socket?.sck?.on('available_bunnies', updateAvailableBunnies);
@@ -145,7 +146,7 @@ export default function GameRoom(props: any) {
       .then((data) => {
         let images = Object.assign({}, ...importAll(data[0]));
         // delete Object.assign({}, {[]: [] })[];
-        // console.log(images);
+        console.log('image paths:', images);
         set_bunny_images(images);
       }).finally(() => set_loading(false));
   }, []);
@@ -185,7 +186,7 @@ export default function GameRoom(props: any) {
             <Button 
               variant={bunny_buttons[`${bunny.name}`] ? 'contained' : 'outlined' } 
               size="large"
-              style={ bunny_button_styles() }
+              style={ bunny_button_styles(bunny.image_path) }
               id={`${bunny.name}`}
               value={ bunny }
               onClick={ handleSelection }
