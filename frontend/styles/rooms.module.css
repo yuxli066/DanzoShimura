@@ -1,0 +1,35 @@
+.body_class {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: #bfdfec;
+    font-family: system-ui, calibri, serif;
+    background-repeat: repeat-x;
+    background-image: url("https://i.stack.imgur.com/b7z29.png");
+    animation: movement 10s linear infinite;
+}
+
+.button_styles {
+    padding: 3em;
+    flex: 0 0 15%; 
+}
+
+.text {
+    position: relative;
+    display: inlineBlock;
+    font-size: 25px;
+    color: #fff;
+    text-Transform: uppercase;
+    font-Weight: 900;
+}
+  
+@keyframes movement {
+    0% {
+        background-position: 0px 0px;
+    }
+    100% {
+        background-position: 560px 0px;
+    }
+}
