@@ -23,18 +23,31 @@ const Div = styled('Div')(({ theme }) => ({
   padding: theme.spacing(1),
 }));
 
-const bunny_button_styles = (image_url: string) => {
+const bunny_button_styles = (bunny_images: any, bunny: any) => {
+  const bunny_obj = bunny_images[bunny.image_path];
+  const linear_gradient = 'linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) )';
+  
   return { 
-    'backgroundImage': `url(${image_url})`,
+    'backgroundSize': '100% 100%',
+    'backgroundImage': `${linear_gradient}, url(${bunny_obj.default.src})`,
     'padding': '3em',
-    'flex': '0 0 15%', 
+    'flex': '0 0 15%',
   };
 };
 
 const button_styles = {
   'padding': '3em',
   'flex': '0 0 15%', 
-}
+};
+
+const rabbit_text_styles = {
+  'position': 'relative',
+  'display': 'inlineBlock',
+  'fontSize': '25px',
+  'color': '#fff',
+  'textTransform': 'uppercase',
+  'fontWeight': '900',
+};
 
 export default function GameRoom(props: any) {
   // shared contexts
@@ -62,7 +75,6 @@ export default function GameRoom(props: any) {
     set_current_game_state(game_state);
   };
   const updateAvailableBunnies = (available_bunnies: any) => {
-    console.log('Bunnies', available_bunnies);
     set_available_bunnies(available_bunnies);
   };
 
@@ -70,6 +82,7 @@ export default function GameRoom(props: any) {
   const handleSelection = (e: any) => {
     console.log("selecting bunnies");
     const selected_bunny = e.target.id;
+    console.log(e);
     set_bunny_buttons(() => {
       return {
         ...bunny_buttons,
@@ -145,8 +158,6 @@ export default function GameRoom(props: any) {
     Promise.all([loadImages])
       .then((data) => {
         let images = Object.assign({}, ...importAll(data[0]));
-        // delete Object.assign({}, {[]: [] })[];
-        console.log('image paths:', images);
         set_bunny_images(images);
       }).finally(() => set_loading(false));
   }, []);
@@ -186,12 +197,14 @@ export default function GameRoom(props: any) {
             <Button 
               variant={bunny_buttons[`${bunny.name}`] ? 'contained' : 'outlined' } 
               size="large"
-              style={ bunny_button_styles(bunny.image_path) }
+              style={ bunny_button_styles(bunny_images, bunny) }
               id={`${bunny.name}`}
               value={ bunny }
               onClick={ handleSelection }
             >
-              { bunny.name }
+              <Box component="div" sx={rabbit_text_styles}>
+                { bunny.name }
+              </Box>
             </Button>
           ))
         }
