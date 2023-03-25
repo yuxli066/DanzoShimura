@@ -8,24 +8,16 @@ import Link from 'next/link';
 import room_css from 'frontend/styles/rooms.module.css'
 
 interface bunny_button_type {
-  [name: string]: { selected: boolean, css: any }
+  [name: string]: { selected: boolean }
 };
 
 const importAll = (imports: any) =>
   imports
     .keys()
-    .map((item: string) => ({
-      [item.replace(/(\.\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item),
-    }));
-
-const Div = styled('Div')(({ theme }) => ({
-  ...theme.typography.button,
-  backgroundColor: theme.palette.background.paper,
-  padding: theme.spacing(1),
-}));
+    .map((item: string) => ( {[item.replace(/(\.\/|bunnies\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item) }));
 
 const bunny_button_styles = (bunny_images: any, bunny: any) => {
-  const bunny_obj = bunny_images[bunny.image_path];
+  const bunny_obj = bunny_images[bunny.image_name];
   const linear_gradient = 'linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) )';
   
   return { 
@@ -37,15 +29,21 @@ const bunny_button_styles = (bunny_images: any, bunny: any) => {
 };
 
 const bunny_button_styles_selected = (bunny_images: any, bunny: any) => {
-  const bunny_obj = bunny_images[bunny.image_path];
+  const bunny_obj = bunny_images[bunny.image_name];
 
   return { 
     'backgroundSize': '100% 100%',
     'backgroundImage': `url(${bunny_obj.default.src})`,
     'padding': '3em',
     'flex': '0 0 15%',
-  };
+  };  
 };
+
+const get_bunny_button_styles = (is_selected: boolean, bunny_images: any, bunny: any) => {
+  return is_selected ? 
+        bunny_button_styles(bunny_images, bunny) : 
+        bunny_button_styles_selected(bunny_images, bunny);
+}
 
 export default function GameRoom(props: any) {
   // shared contexts
@@ -63,54 +61,35 @@ export default function GameRoom(props: any) {
   const [ available_bunnies, set_available_bunnies ] = useState<any>(null);
 
   /** Bunny Selection States */
-  const [ bunny_buttons, set_bunny_buttons ] = useState(() => {
-    const bunny_btns = {} as bunny_button_type;
-    for (let i = 0; i < 12; ++i) {
-      bunny_btns[`bunny${i+1}`] = { selected: false, css: null }
-    }
-    return {
-      ...bunny_btns 
-    };
-  });
   const [ selected_bunnies, set_selected_bunnies ] = useState<any[]>([]);
 
-  /** Update game states */
-  const updateGameState = (game_state: any) => {
-    set_current_game_state(game_state);
-  };
-  const updateAvailableBunnies = (available_bunnies: any) => {
-    set_available_bunnies(available_bunnies);
-  };
+  /** Update game states */ 
+  const updateGameState = (game_state: any) => set_current_game_state(game_state);
+  const updateAvailableBunnies = (available_bunnies: any) => set_available_bunnies(available_bunnies);
+
   /** Handle bunny selections */
   const handleSelection = (e: any) => {
-    console.log("selecting bunnies");
+    e.preventDefault();
     const selected_bunny = e.target.id;
-    console.log(e);
-    set_bunny_buttons(() => {
-      return {
-        ...bunny_buttons,
-        [selected_bunny]: true,
-      }
-    });
-    set_selected_bunnies(() => (selected_bunnies.concat(selected_bunny)));
+    if (selected_bunny) {
+      let bunnies = [...available_bunnies];
+      let current_bunny = bunnies.find((bunny: any) => bunny.id === selected_bunny); 
+      current_bunny.selected = true;
+      set_available_bunnies(bunnies);
+      set_selected_bunnies(selected_bunnies.concat(selected_bunny));
+    } else {
+      console.log(e)
+    }
   };
   /** Reset bunny selections */
   const resetSelection = () => {
-    set_bunny_buttons(() => {
-      const bunny_btns = {} as bunny_button_type;
-      for (let i = 0; i < 12; ++i) {
-        bunny_btns[`bunny${i}`] = { selected: false, css: null };
-      }
-      return { 
-        ...bunny_btns, 
-      }
-    });
-
+    let bunnies = [...available_bunnies];
+    bunnies.forEach(bunny => bunny.selected = false);
+    set_available_bunnies(bunnies);
     user_dispatch({
       type: 'SET PLAYER BUNNIES',
       payload: []
     });
-
     set_selected_bunnies(() => []);
   };
   const playerIsReady = (e: any) => {
@@ -119,14 +98,12 @@ export default function GameRoom(props: any) {
       player_name: user_state.username,
       selected_bunnies: selected_bunnies
     });
-
     user_dispatch({
       type: 'SET PLAYER BUNNIES',
       payload: selected_bunnies,
     });
-
   };
-
+  
   /** Getting Current State */
   useEffect(() => {
     socket?.sck?.emit('get_game_state', {
@@ -166,9 +143,9 @@ export default function GameRoom(props: any) {
   return (!is_loading && current_game_state?.status === 'Ready' && available_bunnies) ? (
     <>
       <Box className={room_css.body_class}>
-        <Div>
+        <div>
           { `Welcome ${user_state.username} to ${user_state.room}` }
-        </Div>
+        </div>
         <Box 
           component={"div"}
           style={{
@@ -195,16 +172,15 @@ export default function GameRoom(props: any) {
             }}  
           >
           {
-            available_bunnies.map((bunny: any, index: number) => (
-              <Button 
-                variant={bunny_buttons[`${bunny.id}`].selected ? 'contained' : 'outlined' } 
+            available_bunnies.map((bunny: any) => (
+              <Button
                 size="large"
-                style={ bunny_button_styles(bunny_images, bunny) }
-                id={`${bunny.name}`}
-                value={ bunny }
+                style={ get_bunny_button_styles(bunny.selected, bunny_images, bunny) }
+                id={ bunny.id }
+                key={ bunny.id }
                 onClick={ handleSelection }
               >
-                <Box component="div" className={ room_css.text }>
+                <Box component="div" className={ room_css.text } id={ bunny.id }>
                   { bunny.name }
                 </Box>
               </Button>
@@ -244,6 +220,6 @@ export default function GameRoom(props: any) {
       </Box>
       </>
     ) : (<>
-      <Div>{"Waiting for room to load..."}</Div>
+      <div>{"Waiting for room to load..."}</div>
     </>)
 }
