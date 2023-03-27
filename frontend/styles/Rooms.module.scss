@@ -11,17 +11,18 @@
     font-style: normal;
 }
 
-$bugbunny: url('../bunnies//bugbunny.png');
-$darkbunny: url('../bunnies/darkbunny.png');
-$electricbunny: url('../bunnies/electricbunny.png');
-$fairybunny: url('../bunnies/fairybunny.png');
-$fightingbunny: url('../bunnies/firebunny.png');
-$firebunny: url('../bunnies/flyingbunny.png');
-$flyingbunny: url('../bunnies/ghostbunny.png');
-$ghostbunny: url('../bunnies/ghostbunny.png');
-$grassbunny: url('../bunnies/grassbunny.png');
-$groundbunny: url('../bunnies/groundbunny.png');
-$icebunny: url('../bunnies/icebunny.png');
+$linear_gradient: 'linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) )';
+$bugbunny: '../bunnies//bugbunny.png';
+$darkbunny: '../bunnies/darkbunny.png';
+$electricbunny: '../bunnies/electricbunny.png';
+$fairybunny: '../bunnies/fairybunny.png';
+$fightingbunny: '../bunnies/firebunny.png';
+$firebunny: '../bunnies/flyingbunny.png';
+$flyingbunny: '../bunnies/ghostbunny.png';
+$ghostbunny: '../bunnies/ghostbunny.png';
+$grassbunny: '../bunnies/grassbunny.png';
+$groundbunny: '../bunnies/groundbunny.png';
+$icebunny: '../bunnies/icebunny.png';
 $allBunnies: (
     "bugbunny": $bugbunny, 
     "darkbunny": $darkbunny, 
@@ -75,12 +76,24 @@ $allBunnies: (
     transition-duration: 0.05s;
 }
 
-@each $bunny_name, $bunny_image_url in $allBunnies {
-    .bg-#{$bunny_name} {
-        @include bunny_buttons_styles
-    }
+@mixin bunny_buttons_styles_selected {
+    background-size: 100% 100%;
+    padding: 3em;
+    flex: 0 0 15%;
 }
 
+@each $bunny_name, $bunny_image_url in $allBunnies {
+    .bg-#{$bunny_name} {
+        background-image: $linear_gradient, url($bunny_image_url);
+        @include bunny_buttons_styles;
+    }
+
+    .bg-#{$bunny_name}-selected {
+        background-image: url($bunny_image_url);
+        @include bunny_buttons_styles_selected;
+    }
+
+}
   
 @keyframes movement {
     0% {

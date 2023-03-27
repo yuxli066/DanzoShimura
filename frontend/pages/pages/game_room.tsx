@@ -4,35 +4,13 @@ import socket_context from '../context/socketContext';
 import user_context from '../context/userContext';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
-import room_css from 'frontend/styles/Rooms.module.css';
+import room_css from 'frontend/styles/Rooms.module.scss';
 
 const importAll = (imports: any) =>
   imports
     .keys()
     .map((item: string) => ( {[item.replace(/(\.\/|bunnies\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item) }));
-const bunny_button_styles = (bunny_images: any, bunny: any) => {
-  const bunny_obj = bunny_images[bunny.image_name];
-  const linear_gradient = 'linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) )';
   
-  return { 
-    'backgroundImage': `${linear_gradient}, url(${bunny_obj.default.src})`,
-  };
-};
-const bunny_button_styles_selected = (bunny_images: any, bunny: any) => {
-  const bunny_obj = bunny_images[bunny.image_name];
-
-  return { 
-    'backgroundSize': '100% 100%',
-    'backgroundImage': `url(${bunny_obj.default.src})`,
-    'padding': '3em',
-    'flex': '0 0 15%',
-  };  
-};
-const get_bunny_button_styles = (is_selected: boolean, bunny_images: any, bunny: any) => {
-  return is_selected ? 
-        bunny_button_styles(bunny_images, bunny) : 
-        bunny_button_styles_selected(bunny_images, bunny);
-}
 export default function GameRoom(props: any) {
   // shared contexts
   const [ user_state, user_dispatch ] = useContext(user_context.UserContext);
@@ -178,13 +156,14 @@ export default function GameRoom(props: any) {
             available_bunnies.map((bunny: any) => (
               <Button
                 size="large"
-                style={ get_bunny_button_styles(bunny.selected, bunny_images, bunny) }
                 id={ bunny.id }
                 key={ bunny.id }
                 onClick={ handleSelection }
               >
-                <Box component="div" className={ room_css.text } id={ bunny.id }>
-                  { bunny.name }
+                <Box component="div" className={ `bg-${bunny.image_name}` } id={ bunny.id }>
+                  <Box component="div" className={ room_css.text } id={ bunny.id }>
+                    { bunny.name }
+                  </Box>
                 </Box>
               </Button>
             ))
