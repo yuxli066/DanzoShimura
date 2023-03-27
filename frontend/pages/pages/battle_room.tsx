@@ -67,7 +67,6 @@ export default function BattleRoom(props: any) {
     }
     return bunny_btns;
   }, []);
-
   const updateGameState = (game_state: any) => {
     set_game_state(game_state);
     console.log('Player Numb from local storage', localStorage.getItem(user_state.username));
@@ -125,7 +124,6 @@ export default function BattleRoom(props: any) {
       set_player2_lockedin(player_2_bunny);
     };
   };
-
   useEffect(() => {
     socket?.sck?.emit('get_game_state', {
       room_name: user_state.room,

@@ -1,0 +1,92 @@
+@font-face {
+    font-family: 'Hanalei';
+    src: url('./fonts/Hanalei-Regular.ttf') format('truetype');
+    font-weight: bolder;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Monoton';
+    src: url('./fonts/Monoton-Regular.ttf') format('truetype');
+    font-weight: bolder;
+    font-style: normal;
+}
+
+$bugbunny: url('../bunnies//bugbunny.png');
+$darkbunny: url('../bunnies/darkbunny.png');
+$electricbunny: url('../bunnies/electricbunny.png');
+$fairybunny: url('../bunnies/fairybunny.png');
+$fightingbunny: url('../bunnies/firebunny.png');
+$firebunny: url('../bunnies/flyingbunny.png');
+$flyingbunny: url('../bunnies/ghostbunny.png');
+$ghostbunny: url('../bunnies/ghostbunny.png');
+$grassbunny: url('../bunnies/grassbunny.png');
+$groundbunny: url('../bunnies/groundbunny.png');
+$icebunny: url('../bunnies/icebunny.png');
+$allBunnies: (
+    "bugbunny": $bugbunny, 
+    "darkbunny": $darkbunny, 
+    "electricbunny": $electricbunny, 
+    "fairybunny": $fairybunny, 
+    "fightingbunny": $fightingbunny, 
+    "firebunny": $firebunny, 
+    "flyingbunny": $flyingbunny, 
+    "ghostbunny": $ghostbunny, 
+    "grassbunny": $grassbunny, 
+    "groundbunny": $groundbunny, 
+    "icebunny": $icebunny
+);
+
+/** Room Page Generic Styling */
+.body_class {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: #bfdfec;
+    font-family: system-ui, calibri, serif;
+    background-repeat: repeat-x;
+    background-image: url("https://i.stack.imgur.com/b7z29.png");
+    animation: movement 10s linear infinite;
+}
+.button_styles {
+    padding: 3em;
+    flex: 0 0 15%; 
+}
+.text {
+    position: relative;
+    display: inlineBlock;
+    font-size: 25px;
+    color: #fff;
+    text-Transform: uppercase;
+    font-Weight: 900;
+}
+.hanalei_font {
+    font-family: Monoton, sans-serif;
+}
+
+/** Bunny Buttons Styling */
+@mixin bunny_buttons_styles {
+    cursor: pointer;
+    background-size: 100% 100%;
+    padding: 3em;
+    flex: 0 0 15%;
+    transition-delay: 0.05s;
+    transition-duration: 0.05s;
+}
+
+@each $bunny_name, $bunny_image_url in $allBunnies {
+    .bg-#{$bunny_name} {
+        @include bunny_buttons_styles
+    }
+}
+
+  
+@keyframes movement {
+    0% {
+        background-position: 0px 0px;
+    }
+    100% {
+        background-position: 560px 0px;
+    }
+}

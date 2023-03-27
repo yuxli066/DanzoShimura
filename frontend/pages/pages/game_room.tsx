@@ -3,31 +3,21 @@ import Box from '@mui/material/Box';
 import socket_context from '../context/socketContext';
 import user_context from '../context/userContext';
 import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
 import Link from 'next/link';
-import room_css from 'frontend/styles/rooms.module.css'
-
-interface bunny_button_type {
-  [name: string]: { selected: boolean }
-};
+import room_css from 'frontend/styles/Rooms.module.css';
 
 const importAll = (imports: any) =>
   imports
     .keys()
     .map((item: string) => ( {[item.replace(/(\.\/|bunnies\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item) }));
-
 const bunny_button_styles = (bunny_images: any, bunny: any) => {
   const bunny_obj = bunny_images[bunny.image_name];
   const linear_gradient = 'linear-gradient( rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6) )';
   
   return { 
-    'backgroundSize': '100% 100%',
     'backgroundImage': `${linear_gradient}, url(${bunny_obj.default.src})`,
-    'padding': '3em',
-    'flex': '0 0 15%',
   };
 };
-
 const bunny_button_styles_selected = (bunny_images: any, bunny: any) => {
   const bunny_obj = bunny_images[bunny.image_name];
 
@@ -38,13 +28,11 @@ const bunny_button_styles_selected = (bunny_images: any, bunny: any) => {
     'flex': '0 0 15%',
   };  
 };
-
 const get_bunny_button_styles = (is_selected: boolean, bunny_images: any, bunny: any) => {
   return is_selected ? 
         bunny_button_styles(bunny_images, bunny) : 
         bunny_button_styles_selected(bunny_images, bunny);
 }
-
 export default function GameRoom(props: any) {
   // shared contexts
   const [ user_state, user_dispatch ] = useContext(user_context.UserContext);
@@ -143,9 +131,6 @@ export default function GameRoom(props: any) {
   return (!is_loading && current_game_state?.status === 'Ready' && available_bunnies) ? (
     <>
       <Box className={room_css.body_class}>
-        <div>
-          { `Welcome ${user_state.username} to ${user_state.room}` }
-        </div>
         <Box 
           component={"div"}
           style={{
@@ -156,6 +141,24 @@ export default function GameRoom(props: any) {
             'alignItems': 'center',
           }}
         >
+          <Box 
+            style={{
+              'height': '100%',
+              'display': 'flex',
+              'justifyContent': 'center',
+              'flexDirection': 'column',
+              'alignItems': 'center',
+              'fontSize': '45px',
+              'color': 'black',
+              'fontWeight': '900',
+            }}
+            className={room_css.hanalei_font}
+          >
+            <span className={room_css.hanalei_font}>Welcome</span>
+            <span>{`${user_state.username}`}</span>
+            <span>to</span>
+            <span>{`${user_state.room}`}</span>
+          </Box>
           <Box
             component="div"
             sx={{
