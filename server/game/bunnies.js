@@ -1,6 +1,6 @@
 const AVAILABLE_BUNNIES = [
     {
-      name: 'BUG BUNNY',
+      name: 'BUGS BUNNY',
       image_name: 'bugbunny', 
       id: 'bunny1',
       power_level: 1, 
@@ -28,14 +28,14 @@ const AVAILABLE_BUNNIES = [
       selected: false, 
     },
     {
-      name: 'FIGHTING BUNNY',
+      name: 'FIGHT BUNNY',
       image_name: 'fightingbunny',
       id: 'bunny5',
       power_level: 5, 
       selected: false, 
     },
     {
-      name: 'FIRE BUNNY',
+      name: 'FIERY BUNNY',
       image_name: 'firebunny', 
       id: 'bunny6',
       power_level: 6, 
@@ -68,21 +68,7 @@ const AVAILABLE_BUNNIES = [
       id: 'bunny10',
       power_level: 10, 
       selected: false, 
-    },
-    {
-      name: 'ICE BUNNY',
-      image_name: 'icebunny',
-      id: 'bunny11',
-      power_level: 11, 
-      selected: false, 
-    },
-    {
-      name: 'NORMAL BUNNY',
-      image_name: 'normaltbunny',
-      id: 'bunny12',
-      power_level: 12,
-      selected: false, 
-    },
+    }
 ];
 
 const GAME_STATES_OBJECT = {

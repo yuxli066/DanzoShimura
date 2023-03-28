@@ -1,4 +1,4 @@
-import '@/styles/globals.css'
+import '@/styles/globals.scss'
 import type { AppProps } from 'next/app'
 import socket_context from './context/socketContext';
 import user_context from './context/userContext';

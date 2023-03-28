@@ -4,12 +4,13 @@ import socket_context from '../context/socketContext';
 import user_context from '../context/userContext';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
-import room_css from 'frontend/styles/Rooms.module.scss';
+import Image from 'next/image';
+import styles from '@styles/Rooms.module.scss';
 
 const importAll = (imports: any) =>
   imports
     .keys()
-    .map((item: string) => ( {[item.replace(/(\.\/|bunnies\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item) }));
+    .map((item: string) => ( {[item.replace(/(\.\/|images\/)(.+)(\.jpe?g|\.png|\.PNG|\.JPG)/g, '$2')]: imports(item) }));
   
 export default function GameRoom(props: any) {
   // shared contexts
@@ -96,9 +97,7 @@ export default function GameRoom(props: any) {
   }, [socket]);
   useEffect(() => {
     set_loading(true);
-    const loadImages = new Promise((resolve) =>
-      resolve(require.context('../../bunnies', false, /\.(jpe?g|png)/i)),
-    );
+    const loadImages = new Promise((resolve) => resolve(require.context('../images', false, /\.(jpe?g|png)/i)));
     Promise.all([loadImages])
       .then((data) => {
         let images = Object.assign({}, ...importAll(data[0]));
@@ -106,9 +105,9 @@ export default function GameRoom(props: any) {
       }).finally(() => set_loading(false));
   }, []);
 
-  return (!is_loading && current_game_state?.status === 'Ready' && available_bunnies) ? (
+  return ( !is_loading && current_game_state?.status === 'Ready' && available_bunnies) ? (
     <>
-      <Box className={room_css.body_class}>
+      <Box className={styles.body_class}>
         <Box 
           component={"div"}
           style={{
@@ -130,42 +129,38 @@ export default function GameRoom(props: any) {
               'color': 'black',
               'fontWeight': '900',
             }}
-            className={room_css.hanalei_font}
+            className={styles.hanalei_font}
           >
-            <span className={room_css.hanalei_font}>Welcome</span>
+            <span className={styles.hanalei_font}>Welcome</span>
             <span>{`${user_state.username}`}</span>
             <span>to</span>
             <span>{`${user_state.room}`}</span>
           </Box>
           <Box
             component="div"
-            sx={{
-              '& > :not(style)': { m: 1, width: '25ch' },
-            }}
-            style={{
-              'height': '95vh',
-              'display': 'flex', 
-              'flexDirection': 'row',
-              'justifyContent': 'center',
-              'backgroundColor': 'transparent',
-              'width': '75%',
-              'flexWrap': 'wrap'
-            }}  
+            className={styles.bunnies_container}
           >
           {
             available_bunnies.map((bunny: any) => (
-              <Button
-                size="large"
-                id={ bunny.id }
-                key={ bunny.id }
-                onClick={ handleSelection }
-              >
-                <Box component="div" className={ `bg-${bunny.image_name}` } id={ bunny.id }>
-                  <Box component="div" className={ room_css.text } id={ bunny.id }>
-                    { bunny.name }
-                  </Box>
+              <Box className={ styles.buttons_container } >
+                <Button
+                  size="large"
+                  id={ bunny.id }
+                  key={ bunny.id }
+                  onClick={ handleSelection }
+                  className={ styles[`btn-${bunny.image_name}`] } 
+                >
+                  <Image 
+                    src={ bunny_images[bunny.image_name] }
+                    alt={bunny.image_name}
+                    fill={true}
+                    quality={100}
+                  />
+                </Button>
+                <Box component={"div"} className={styles['btn_name']}>
+                  { bunny.name }
                 </Box>
-              </Button>
+              </Box>
             ))
           }
           </Box>
@@ -183,7 +178,7 @@ export default function GameRoom(props: any) {
               <Button 
                 variant={'contained'} 
                 size="large"
-                className={ room_css.button_styles }
+                className={ styles.button_styles }
                 onClick={ playerIsReady }
               >
                 { "Ready" }
@@ -192,7 +187,7 @@ export default function GameRoom(props: any) {
             <Button 
               variant={'contained'} 
               size="large"
-              className={ room_css.button_styles }
+              className={ styles.button_styles }
               onClick={ resetSelection }
             >
               { "Reset" }
