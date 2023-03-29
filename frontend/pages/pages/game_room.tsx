@@ -136,7 +136,7 @@ export default function GameRoom(props: any) {
             className={styles.hanalei_font}
           >
             <Box className={styles.hanalei_font}>
-              {`Welcome ${user_state.username}`} <br/> {`to ${user_state.room}`}
+              {`Welcome`} <br /> {`${user_state.username}`} <br/> {`to ${user_state.room}`}
             </Box>
             <Link style={{ display: 'contents' }} href={"/pages/battle_room"}>
               <Button 
