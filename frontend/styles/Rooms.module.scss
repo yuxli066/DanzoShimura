@@ -26,7 +26,12 @@ $allBunnies: (
     "ghostbunny", 
     "grassbunny", 
     "groundbunny", 
-    "icebunny"
+    "icebunny",
+    "normalbunny",
+    "poisonbunny",
+    "psychicbunny",
+    "rockbunny", 
+    "snowbunny"
 );
 
 /** Room Page Generic Styling */
@@ -43,11 +48,24 @@ $allBunnies: (
     animation: movement 10s linear infinite;
 }
 .button_styles {
+    font-family: Monoton, sans-serif;
+    background-color: whitesmoke;
+    color: black;
+    font-Weight: 900;
+    font-size: 15px;
+    width: 100%;
+    max-height: 3em;
     padding: 3em;
-    flex: 0 0 15%; 
+    flex: 0 0 15%;
+    &:hover {
+        background-color: yellowgreen;
+    } 
 }
 .hanalei_font {
+    align-self: flex-start;
+    flex-basis: 7em;
     font-family: Monoton, sans-serif;
+    text-align: center;
 }
 
 /** Bunnies Container */
@@ -65,9 +83,11 @@ $allBunnies: (
 
 .buttons_container {
     position: relative;
+    display: flex;
+    justify-content: center;
     background-size: 100% 100%;
-    min-height: 20em;
-    min-width: 6em;
+    height: 11em;
+    width: 2em;
     flex: 0 0 15%;
     flex-grow: 4;
     z-index: 5;
@@ -76,16 +96,31 @@ $allBunnies: (
 /** Bunny Buttons Styling */
 @mixin bunny_buttons_styles {
     background-size: 100% 100%;
-    min-height: 20em;
+    min-height: 11em;
     width: 100%;
     flex: 0 0 15%;
     flex-grow: 4;
     z-index: 5;
 }
 
+@mixin bunny_buttons_styles_selected {
+    background-size: 100% 100%;
+    filter: opacity(0.5);
+    cursor: unset;
+    min-height: 11em;
+    width: 100%;
+    flex: 0 0 15%;
+    flex-grow: 4;
+    z-index: 10;
+}
+
 @each $bunny_name in $allBunnies {
     .btn-#{$bunny_name} {
         @include bunny_buttons_styles;
+    }
+
+    .btn-#{$bunny_name}-selected {
+        @include bunny_buttons_styles_selected;
     }
     
     .btn-#{$bunny_name}:hover {
@@ -100,11 +135,13 @@ $allBunnies: (
     .btn_name {
         display: none;
         opacity: 0;
-        font-size: 35px;
-        color: darkblue !important;
+        font-size: 15px;
+        font-family: Monoton, sans-serif;
+        color: black !important;
         text-Transform: uppercase;
         font-Weight: 900;
         text-align: center;
+        top: 10em;
     }
 
     .btn-#{$bunny_name}:hover {

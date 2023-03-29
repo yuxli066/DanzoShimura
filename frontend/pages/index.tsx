@@ -81,6 +81,7 @@ export default function Home() {
           helperText="Please enter your username"
           variant="outlined" 
           onChange={ handleChange }
+          inputProps={{ maxLength: 10 }}
         />
         <Link href={"/pages/pick_rooms"}>
           <Button 

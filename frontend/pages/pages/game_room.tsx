@@ -42,6 +42,7 @@ export default function GameRoom(props: any) {
       let bunnies = [...available_bunnies];
       let current_bunny = bunnies.find((bunny: any) => bunny.id === selected_bunny); 
       current_bunny.selected = true;
+      console.log(bunnies);
       set_available_bunnies(bunnies);
       set_selected_bunnies(selected_bunnies.concat(selected_bunny));
     } else {
@@ -128,53 +129,16 @@ export default function GameRoom(props: any) {
               'fontSize': '45px',
               'color': 'black',
               'fontWeight': '900',
+              'gap': '1em',
+              'maxWidth': '40%',
+              'flexBasis': '40%',
             }}
             className={styles.hanalei_font}
           >
-            <span className={styles.hanalei_font}>Welcome</span>
-            <span>{`${user_state.username}`}</span>
-            <span>to</span>
-            <span>{`${user_state.room}`}</span>
-          </Box>
-          <Box
-            component="div"
-            className={styles.bunnies_container}
-          >
-          {
-            available_bunnies.map((bunny: any) => (
-              <Box className={ styles.buttons_container } >
-                <Button
-                  size="large"
-                  id={ bunny.id }
-                  key={ bunny.id }
-                  onClick={ handleSelection }
-                  className={ styles[`btn-${bunny.image_name}`] } 
-                >
-                  <Image 
-                    src={ bunny_images[bunny.image_name] }
-                    alt={bunny.image_name}
-                    fill={true}
-                    quality={100}
-                  />
-                </Button>
-                <Box component={"div"} className={styles['btn_name']}>
-                  { bunny.name }
-                </Box>
-              </Box>
-            ))
-          }
-          </Box>
-          <Box
-            style={{
-              'display': 'flex', 
-              'flexDirection': 'column',
-              'justifyContent': 'center',
-              'backgroundColor': 'transparent',
-              'flexWrap': 'wrap',
-              'gap': '2em'
-            }}  
-          >
-            <Link href={"/pages/battle_room"}>
+            <Box className={styles.hanalei_font}>
+              {`Welcome ${user_state.username}`} <br/> {`to ${user_state.room}`}
+            </Box>
+            <Link style={{ display: 'contents' }} href={"/pages/battle_room"}>
               <Button 
                 variant={'contained'} 
                 size="large"
@@ -192,6 +156,38 @@ export default function GameRoom(props: any) {
             >
               { "Reset" }
             </Button>
+          </Box>
+          <Box
+            component="div"
+            className={styles.bunnies_container}
+          >
+          {
+            available_bunnies.map((bunny: any) => (
+              <Box className={ styles.buttons_container } >
+                <Button
+                  size="large"
+                  id={ bunny.id }
+                  key={ bunny.id }
+                  onClick={ handleSelection }
+                  className={ bunny.selected ? styles[`btn-${bunny.image_name}-selected`] : styles[`btn-${bunny.image_name}`] } 
+                >
+                  <Image 
+                    id={ bunny.id }
+                    src={ bunny_images[bunny.image_name] }
+                    alt={bunny.image_name}
+                    fill={true}
+                    quality={100}
+                  />
+                </Button>
+                <Box 
+                  id={ bunny.id }
+                  component={"div"} 
+                  className={styles['btn_name']}>
+                  { bunny.name }
+                </Box>
+              </Box>
+            ))
+          }
           </Box>
         </Box>
       </Box>

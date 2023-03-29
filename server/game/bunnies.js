@@ -68,6 +68,41 @@ const AVAILABLE_BUNNIES = [
       id: 'bunny10',
       power_level: 10, 
       selected: false, 
+    },
+    {
+      name: 'NORMAL BUNNY',
+      image_name: 'normalbunny',
+      id: 'bunny11',
+      power_level: 11, 
+      selected: false, 
+    },
+    {
+      name: 'POISON BUNNY',
+      image_name: 'poisonbunny',
+      id: 'bunny12',
+      power_level: 12, 
+      selected: false, 
+    },
+    {
+      name: 'PSYCHIC BUNNY',
+      image_name: 'psychicbunny',
+      id: 'bunny13',
+      power_level: 13, 
+      selected: false, 
+    },
+    {
+      name: 'ROCK BUNNY',
+      image_name: 'rockbunny',
+      id: 'bunny14',
+      power_level: 14, 
+      selected: false, 
+    },
+    {
+      name: 'SNOW BUNNY',
+      image_name: 'snowbunny',
+      id: 'bunny15',
+      power_level: 15, 
+      selected: false, 
     }
 ];
 
